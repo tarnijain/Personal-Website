@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Tarni's Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Lucida Sans', sans-serif;
+            background: linear-gradient(135deg, #110101 0%, #9a490c 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.1), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.1), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.1), transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: sparkle 20s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes sparkle {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-100px); }
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .nav-link {
+            background: rgba(8, 4, 0, 0.9);
+            color: #fafafa;
+            padding: 10px 20px;
+            border: 2px solid #ac7e63;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-link:hover::before {
+            left: 100%;
+        }
+
+        .nav-link:hover {
+            background: rgba(213, 61, 10, 0.9);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(213, 61, 10, 0.3);
+        }
+
+        /* Divider */
+        .divider {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ac7e63, transparent);
+            margin: 2rem 0;
+            opacity: 0.7;
+        }
+
+        /* Login Container */
+        .login-container {
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+            border: 1px solid rgba(172, 126, 99, 0.3);
+            animation: fadeInUp 1s ease-out 0.3s both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ac7e63, #d53d0a, #ac7e63);
+            border-radius: 25px;
+            z-index: -1;
+            opacity: 0.3;
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Header */
+        .login-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .login-header h1 {
+            font-size: 2.5rem;
+            color: #ac7e63;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #ac7e63, #d4a574, #ac7e63);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .lock-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            color: #f0f8ff;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(172, 126, 99, 0.3);
+            border-radius: 15px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ac7e63;
+            background: rgba(255,255,255,0.15);
+            box-shadow: 0 0 25px rgba(172, 126, 99, 0.3);
+            transform: translateY(-2px);
+        }
+
+        input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* Password visibility toggle */
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #ac7e63;
+        }
+
+        /* Login Button */
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ac7e63, #d53d0a);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(172, 126, 99, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Message Styles */
+        .message {
+            margin-top: 1rem;
+            padding: 12px 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+            color: #4CAF50;
+        }
+
+        .message.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 2px solid #f44336;
+            color: #f44336;
+        }
+
+        .message.loading {
+            background: rgba(33, 150, 243, 0.2);
+            border: 2px solid #2196F3;
+            color: #2196F3;
+        }
+
+        /* Security Features */
+        .security-info {
+            margin-top: 2rem;
+            padding: 15px;
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .attempts-warning {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+            color: #f44336;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 90%;
+                padding: 15px;
+            }
+            
+            .nav-container {
+                gap: 1rem;
+            }
+            
+            .nav-link {
+                padding: 8px 16px;
+                font-size: 0.85rem;
+            }
+            
+            .login-container {
+                padding: 2rem 1.5rem;
+            }
+            
+            .login-header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-link {
+                width: 120px;
+                text-align: center;
+            }
+            
+            .login-container {
+                padding: 1.5rem 1rem;
+            }
+        }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            body::before {
+                animation: none;
+            }
+        }
+
+        input:focus,
+        .login-btn:focus,
+        .nav-link:focus {
+            outline: 3px solid #ac7e63;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav-container">
+            <a href="MainPage.html" class="nav-link" aria-label="Navigate to Main page">Main Page</a>
+            <a href="contact.html" class="nav-link" aria-label="Navigate to Contact page">Contact</a>
+           
+        </nav>
+
+        <div class="divider"></div>
+
+        <div class="login-container">
+            <div class="login-header">
+                <div class="lock-icon">🔐</div>
+                <h1>Admin Login</h1>
+            </div>
+
+            <form id="loginForm" novalidate>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-container">
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                        <button type="button" class="password-toggle" id="togglePassword" aria-label="Toggle password visibility">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    Login
+                </button>
+
+                <div class="message" id="messageDiv"></div>
+            </form>
+
+            <div class="security-info" id="securityInfo">
+                🛡️ Secure admin area. All login attempts are monitored.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Login attempts tracking
+        let loginAttempts = parseInt(localStorage.getItem('loginAttempts') || '0');
+        const maxAttempts = 5;
+        const lockoutTime = 15 * 60 * 1000; // 15 minutes
+        
+        // Check if user is locked out
+        const lockoutEnd = localStorage.getItem('lockoutEnd');
+        if (lockoutEnd && new Date().getTime() < parseInt(lockoutEnd)) {
+            const remainingTime = Math.ceil((parseInt(lockoutEnd) - new Date().getTime()) / (1000 * 60));
+            showLockoutMessage(remainingTime);
+        }
+
+        // Admin credentials (In real application, this should be server-side)
+        const validCredentials = {
+            username: 'admin',
+            password: 'tarni2024'
+        };
+
+        // Form elements
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const messageDiv = document.getElementById('messageDiv');
+        const securityInfo = document.getElementById('securityInfo');
+        const togglePassword = document.getElementById('togglePassword');
+
+        // Password visibility toggle
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+
+        // Form submission
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleLogin();
+        });
+
+        function handleLogin() {
+            // Check if locked out
+            const lockoutEnd = localStorage.getItem('lockoutEnd');
+            if (lockoutEnd && new Date().getTime() < parseInt(lockoutEnd)) {
+                const remainingTime = Math.ceil((parseInt(lockoutEnd) - new Date().getTime()) / (1000 * 60));
+                showLockoutMessage(remainingTime);
+                return;
+            }
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+
+            // Basic validation
+            if (!username || !password) {
+                showMessage('Please enter both username and password.', 'error');
+                return;
+            }
+
+            // Show loading
+            showMessage('Authenticating...', 'loading');
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+
+            // Simulate authentication delay
+            setTimeout(() => {
+                if (username === validCredentials.username && password === validCredentials.password) {
+                    // Successful login
+                    loginAttempts = 0;
+                    localStorage.removeItem('loginAttempts');
+                    localStorage.removeItem('lockoutEnd');
+                    
+                    showMessage('Login successful! Welcome, Admin.', 'success');
+                    
+                    // Redirect after successful login (replace with your admin dashboard)
+                    setTimeout(() => {
+                        window.location.href = 'adminpage.html'; // Create this page
+                        // For now, just show success message
+                        showMessage('✅ Access Granted! Admin dashboard would load here.', 'success');
+                    }, 2000);
+                    
+                } else {
+                    // Failed login
+                    loginAttempts++;
+                    localStorage.setItem('loginAttempts', loginAttempts.toString());
+                    
+                    if (loginAttempts >= maxAttempts) {
+                        // Lock out user
+                        const lockoutEndTime = new Date().getTime() + lockoutTime;
+                        localStorage.setItem('lockoutEnd', lockoutEndTime.toString());
+                        showLockoutMessage(15);
+                    } else {
+                        const remainingAttempts = maxAttempts - loginAttempts;
+                        showMessage(`❌ Invalid credentials. ${remainingAttempts} attempts remaining.`, 'error');
+                        updateSecurityInfo(remainingAttempts);
+                    }
+                    
+                    // Clear password field
+                    passwordInput.value = '';
+                }
+                
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }, 1500);
+        }
+
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+        }
+
+        function showLockoutMessage(minutes) {
+            showMessage(`🔒 Too many failed attempts. Account locked for ${minutes} minutes.`, 'error');
+            securityInfo.textContent = '⚠️ Account temporarily locked due to security reasons.';
+            securityInfo.className = 'security-info attempts-warning';
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Account Locked';
+        }
+
+        function updateSecurityInfo(remainingAttempts) {
+            if (remainingAttempts <= 2) {
+                securityInfo.textContent = `⚠️ Warning: Account will be locked after ${remainingAttempts} more failed attempts.`;
+                securityInfo.className = 'security-info attempts-warning';
+            }
+        }
+
+        // Real-time validation
+        const inputs = [usernameInput, passwordInput];
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                // Remove error styling on input
+                this.style.borderColor = 'rgba(172, 126, 99, 0.3)';
+                if (messageDiv.classList.contains('error')) {
+                    messageDiv.style.display = 'none';
+                }
+            });
+
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+        });
+
+        // Security: Clear form data on page unload
+        window.addEventListener('beforeunload', function() {
+            usernameInput.value = '';
+            passwordInput.value = '';
+        });
+
+        // Auto-clear lockout after time expires
+        function checkLockoutStatus() {
+            const lockoutEnd = localStorage.getItem('lockoutEnd');
+            if (lockoutEnd && new Date().getTime() >= parseInt(lockoutEnd)) {
+                localStorage.removeItem('lockoutEnd');
+                localStorage.removeItem('loginAttempts');
+                location.reload();
+            }
+        }
+
+        // Check lockout status every minute
+        setInterval(checkLockoutStatus, 60000);
+    </script>
+</body>
+</html>

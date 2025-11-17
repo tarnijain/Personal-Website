@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Dashboard - My Daily Hub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Lucida Sans', sans-serif;
+            background: linear-gradient(135deg, #110101 0%, #9a490c 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.1), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.1), transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: sparkle 20s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+        @keyframes sparkle { 0% { transform: translateY(0px); } 100% { transform: translateY(-100px); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shimmer { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+        .dashboard-header { text-align: center; margin-bottom: 3rem; animation: fadeInDown 1s ease-out; }
+        .dashboard-header h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            color: #ac7e63;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            background: linear-gradient(45deg, #ac7e63, #d4a574, #ac7e63);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        .dashboard-header p { font-size: 1.2rem; color: rgba(255,255,255,0.8); margin-top: 10px; }
+        .greeting { text-align: center; font-size: 1.4rem; color: #d4a574; margin-bottom: 2rem; animation: fadeInDown 1s ease-out 0.3s both; }
+        .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; animation: fadeInUp 1s ease-out 0.3s both; }
+        .stat-item {
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(172, 126, 99, 0.2);
+            padding: 1.5rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-item:hover { transform: translateY(-5px); border-color: rgba(172, 126, 99, 0.4); }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ac7e63, #d53d0a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-label { color: rgba(255,255,255,0.8); font-size: 1rem; font-weight: 600; }
+        .stat-icon { font-size: 2rem; margin-bottom: 0.8rem; color: #ac7e63; }
+        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; animation: fadeInUp 1s ease-out 0.6s both; margin-bottom: 2rem; }
+        .journal-section { grid-column: 1 / -1; animation: fadeInUp 1s ease-out 0.9s both; }
+        .section-card {
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(172, 126, 99, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .section-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #ac7e63, #d53d0a); }
+        .section-card:hover { transform: translateY(-5px); border-color: rgba(172, 126, 99, 0.4); box-shadow: 0 30px 80px rgba(0,0,0,0.6); }
+        .section-title { font-size: 1.5rem; color: #ac7e63; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .todo-input, .journal-textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(172, 126, 99, 0.3);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 15px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .journal-textarea { min-height: 150px; resize: vertical; line-height: 1.6; }
+        .todo-input:focus, .journal-textarea:focus { border-color: #ac7e63; box-shadow: 0 0 20px rgba(172, 126, 99, 0.3); }
+        .todo-input::placeholder, .journal-textarea::placeholder { color: rgba(255,255,255,0.6); }
+        .add-btn {
+            background: linear-gradient(135deg, #ac7e63, #d53d0a);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+        .add-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(172, 126, 99, 0.4); }
+        .todo-item, .reminder-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(172, 126, 99, 0.1); border-radius: 12px; padding: 1rem; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 1rem; transition: all 0.3s ease; }
+        .todo-item:hover, .reminder-item:hover { background: rgba(255,255,255,0.08); border-color: rgba(172, 126, 99, 0.3); }
+        .todo-checkbox { width: 20px; height: 20px; border: 2px solid #ac7e63; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; flex-shrink: 0; }
+        .todo-checkbox.checked { background: #ac7e63; position: relative; }
+        .todo-checkbox.checked::after { content: '✓'; color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; font-weight: bold; }
+        .todo-text { flex: 1; color: rgba(255,255,255,0.9); line-height: 1.4; transition: all 0.3s ease; }
+        .todo-text.completed { text-decoration: line-through; color: rgba(255,255,255,0.5); }
+        .delete-todo { background: linear-gradient(135deg, #d53d0a, #9a490c); color: white; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s ease; flex-shrink: 0; }
+        .delete-todo:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(213, 61, 10, 0.4); }
+        .priority-badge { background: linear-gradient(135deg, #d53d0a, #9a490c); color: white; font-size: 0.7rem; padding: 4px 8px; border-radius: 10px; margin-left: auto; flex-shrink: 0; }
+        .priority-badge.medium { background: linear-gradient(135deg, #d4a574, #ac7e63); }
+        .priority-badge.low { background: linear-gradient(135deg, #ac7e63, #8b6a4d); }
+        .reminder-time { color: #d4a574; font-size: 0.9rem; margin-left: auto; flex-shrink: 0; }
+        .no-items { text-align: center; padding: 2rem; color: rgba(255,255,255,0.6); font-style: italic; }
+        .journal-entry { background: rgba(255,255,255,0.05); border: 1px solid rgba(172, 126, 99, 0.2); border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem; transition: all 0.3s ease; cursor: pointer; }
+        .journal-entry:hover { background: rgba(255,255,255,0.08); border-color: rgba(172, 126, 99, 0.4); transform: translateX(5px); }
+        .journal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid rgba(172, 126, 99, 0.2); }
+        .journal-date { color: #d4a574; font-weight: 600; font-size: 1.1rem; }
+        .journal-mood { font-size: 1.5rem; }
+        .journal-title { font-size: 1.2rem; color: #ac7e63; font-weight: 600; margin-bottom: 0.8rem; }
+        .journal-preview { color: rgba(255,255,255,0.8); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .journal-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .journal-btn { background: linear-gradient(135deg, #ac7e63, #d53d0a); color: white; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; }
+        .journal-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(172, 126, 99, 0.4); }
+        .journal-btn.delete { background: linear-gradient(135deg, #d53d0a, #9a490c); }
+        .mood-selector { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .mood-option { font-size: 2rem; cursor: pointer; padding: 0.5rem; border-radius: 10px; transition: all 0.3s ease; border: 2px solid transparent; }
+        .mood-option:hover { transform: scale(1.2); background: rgba(255,255,255,0.1); }
+        .mood-option.selected { border-color: #ac7e63; background: rgba(172, 126, 99, 0.2); }
+        .journal-search { margin-bottom: 1.5rem; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal-content { background: rgba(17, 1, 1, 0.95); border: 2px solid rgba(172, 126, 99, 0.3); border-radius: 20px; padding: 2rem; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid rgba(172, 126, 99, 0.3); }
+        .modal-close { background: linear-gradient(135deg, #d53d0a, #9a490c); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; transition: all 0.3s ease; }
+        .modal-close:hover { transform: rotate(90deg) scale(1.1); }
+        .full-journal-content { color: rgba(255,255,255,0.9); line-height: 1.8; white-space: pre-wrap; word-wrap: break-word; }
+        @media (max-width: 768px) {
+            .dashboard-container { padding: 15px; }
+            .main-content { grid-template-columns: 1fr; gap: 1.5rem; }
+            .stats-bar { grid-template-columns: 1fr; gap: 1rem; }
+            .mood-selector { gap: 0.5rem; }
+            .mood-option { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>✨ My Personal Hub</h1>
+            <p>Your daily productivity companion</p>
+        </div>
+        <div class="greeting" id="greeting"></div>
+        <div class="stats-bar">
+            <div class="stat-item"><div class="stat-icon">✅</div><div class="stat-number" id="completedTodos">0</div><div class="stat-label">Tasks Completed</div></div>
+            <div class="stat-item"><div class="stat-icon">📋</div><div class="stat-number" id="totalTodos">0</div><div class="stat-label">Total Tasks</div></div>
+            <div class="stat-item"><div class="stat-icon">🎯</div><div class="stat-number" id="productivity">0%</div><div class="stat-label">Productivity</div></div>
+            <div class="stat-item"><div class="stat-icon">📖</div><div class="stat-number" id="journalEntries">0</div><div class="stat-label">Journal Entries</div></div>
+        </div>
+        <div class="main-content">
+            <div class="section-card">
+                <div class="section-title"><span>📝</span> My Tasks</div>
+                <input type="text" id="todoInput" class="todo-input" placeholder="Add a new task...">
+                <button class="add-btn" onclick="addTodo()">➕ Add Task</button>
+                <div id="todoList"></div>
+            </div>
+            <div class="section-card">
+                <div class="section-title"><span>⏰</span> Reminders</div>
+                <input type="text" id="reminderInput" class="todo-input" placeholder="Add a reminder...">
+                <input type="datetime-local" id="reminderTime" class="todo-input">
+                <button class="add-btn" onclick="addReminder()">⏰ Add Reminder</button>
+                <div id="reminderList"></div>
+            </div>
+        </div>
+        <div class="journal-section">
+            <div class="section-card">
+                <div class="section-title"><span>📖</span> Daily Journal</div>
+                <input type="text" id="journalTitle" class="todo-input" placeholder="Entry title (optional)">
+                <div class="mood-selector">
+                    <div class="mood-option selected" data-mood="😊" onclick="selectMood('😊')">😊</div>
+                    <div class="mood-option" data-mood="😔" onclick="selectMood('😔')">😔</div>
+                    <div class="mood-option" data-mood="😃" onclick="selectMood('😃')">😃</div>
+                    <div class="mood-option" data-mood="😢" onclick="selectMood('😢')">😢</div>
+                    <div class="mood-option" data-mood="😴" onclick="selectMood('😴')">😴</div>
+                    <div class="mood-option" data-mood="🤔" onclick="selectMood('🤔')">🤔</div>
+                    <div class="mood-option" data-mood="🥳" onclick="selectMood('🥳')">🥳</div>
+                    <div class="mood-option" data-mood="😌" onclick="selectMood('😌')">😌</div>
+                </div>
+                <textarea id="journalContent" class="journal-textarea" placeholder="Write your thoughts, feelings, or what happened today..."></textarea>
+                <button class="add-btn" onclick="saveJournalEntry()">💾 Save Journal Entry</button>
+                <div class="journal-search">
+                    <input type="text" id="journalSearchInput" class="todo-input" placeholder="Search journal entries..." oninput="searchJournal()">
+                </div>
+                <div id="journalEntryList"></div>
+            </div>
+        </div>
+    </div>
+    <div id="journalModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div class="journal-date" id="modalDate"></div>
+                    <div class="journal-title" id="modalTitle"></div>
+                </div>
+                <button class="modal-close" onclick="closeJournalModal()">×</button>
+            </div>
+            <div class="journal-mood" id="modalMood" style="font-size: 3rem; text-align: center; margin-bottom: 1.5rem;"></div>
+            <div class="full-journal-content" id="modalContent"></div>
+        </div>
+    </div>
+    <script>
+        // Data arrays
+        let todos = [];
+        let reminders = [];
+        let journalEntries = [];
+        let selectedMood = '😊';
+
+        // Load data from localStorage
+        function loadData() {
+            try {
+                todos = JSON.parse(localStorage.getItem('personalTodos')) || [];
+                reminders = JSON.parse(localStorage.getItem('personalReminders')) || [];
+                journalEntries = JSON.parse(localStorage.getItem('personalJournal')) || [];
+            } catch (e) {
+                todos = [];
+                reminders = [];
+                journalEntries = [];
+            }
+        }
+
+        // Set greeting based on time of day
+        function setGreeting() {
+            const hour = new Date().getHours();
+            const greetingEl = document.getElementById('greeting');
+            let greetingText;
+            
+            if (hour < 12) {
+                greetingText = '🌅 Good morning! Ready to conquer the day?';
+            } else if (hour < 17) {
+                greetingText = '☀️ Good afternoon! Keep up the great work!';
+            } else {
+                greetingText = '🌆 Good evening! Time to reflect on your achievements!';
+            }
+            
+            greetingEl.textContent = greetingText;
+        }
+
+        // Add new todo
+        function addTodo() {
+            const input = document.getElementById('todoInput');
+            const text = input.value.trim();
+            
+            if (text) {
+                todos.unshift({
+                    id: Date.now(),
+                    text: text,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                });
+                input.value = '';
+                saveTodos();
+                loadTodos();
+                updateStats();
+            }
+        }
+
+        // Add new reminder
+        function addReminder() {
+            const input = document.getElementById('reminderInput');
+            const timeInput = document.getElementById('reminderTime');
+            const text = input.value.trim();
+            const time = timeInput.value;
+            
+            if (text && time) {
+                reminders.unshift({
+                    id: Date.now(),
+                    text: text,
+                    time: time,
+                    notified: false
+                });
+                input.value = '';
+                timeInput.value = '';
+                saveReminders();
+                loadReminders();
+            }
+        }
+
+        // Load and display todos
+        function loadTodos() {
+            const list = document.getElementById('todoList');
+            
+            if (todos.length === 0) {
+                list.innerHTML = '<div class="no-items">🌟 No tasks yet! Add one above to get started.</div>';
+                return;
+            }
+            
+            list.innerHTML = todos.map(todo => `
+                <div class="todo-item">
+                    <div class="todo-checkbox ${todo.completed ? 'checked' : ''}" onclick="toggleTodo(${todo.id})"></div>
+                    <div class="todo-text ${todo.completed ? 'completed' : ''}">${todo.text}</div>
+                    <button class="delete-todo" onclick="deleteTodo(${todo.id})">🗑</button>
+                </div>
+            `).join('');
+        }
+
+        // Load and display reminders
+        function loadReminders() {
+            const list = document.getElementById('reminderList');
+            
+            if (reminders.length === 0) {
+                list.innerHTML = '<div class="no-items">⏰ No reminders set! Add one above.</div>';
+                return;
+            }
+            
+            list.innerHTML = reminders.map(reminder => `
+                <div class="reminder-item">
+                    <div class="todo-text">${reminder.text}</div>
+                    <div class="reminder-time">${formatReminderTime(reminder.time)}</div>
+                    <button class="delete-todo" onclick="deleteReminder(${reminder.id})">🗑</button>
+                </div>
+            `).join('');
+        }
+
+        // Toggle todo completion
+        function toggleTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                saveTodos();
+                loadTodos();
+                updateStats();
+            }
+        }
+
+        // Delete todo
+        function deleteTodo(id) {
+            todos = todos.filter(t => t.id !== id);
+            saveTodos();
+            loadTodos();
+            updateStats();
+        }
+
+        // Delete reminder
+        function deleteReminder(id) {
+            reminders = reminders.filter(r => r.id !== id);
+            saveReminders();
+            loadReminders();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const completed = todos.filter(t => t.completed).length;
+            const total = todos.length;
+            const productivity = total > 0 ? Math.round((completed / total) * 100) : 0;
+            
+            document.getElementById('completedTodos').textContent = completed;
+            document.getElementById('totalTodos').textContent = total;
+            document.getElementById('productivity').textContent = productivity + '%';
+            document.getElementById('journalEntries').textContent = journalEntries.length;
+        }
+
+        // Format reminder time
+        function formatReminderTime(timeString) {
+            const date = new Date(timeString);
+            const now = new Date();
+            
+            if (date.toDateString() === now.toDateString()) {
+                return 'Today at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+            
+            return date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        // Check reminders
+        function checkReminders() {
+            const now = new Date();
+            
+            reminders.forEach(reminder => {
+                const reminderTime = new Date(reminder.time);
+                
+                if (!reminder.notified && reminderTime <= now) {
+                    alert('⏰ Reminder: ' + reminder.text);
+                    reminder.notified = true;
+                    saveReminders();
+                }
+            });
+        }
+
+        // Save functions
+        function saveTodos() {
+            localStorage.setItem('personalTodos', JSON.stringify(todos));
+        }
+
+        function saveReminders() {
+            localStorage.setItem('personalReminders', JSON.stringify(reminders));
+        }
+
+        // Mood selection
+        function selectMood(mood) {
+            selectedMood = mood;
+            document.querySelectorAll('.mood-option').forEach(option => {
+                option.classList.remove('selected');
+                if (option.getAttribute('data-mood') === mood) {
+                    option.classList.add('selected');
+                }
+            });
+        }
+
+        // Save journal entry
+        function saveJournalEntry() {
+            const titleInput = document.getElementById('journalTitle');
+            const contentInput = document.getElementById('journalContent');
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+            
+            if (content) {
+                const entry = {
+                    id: Date.now(),
+                    title: title || 'Untitled Entry',
+                    content: content,
+                    mood: selectedMood,
+                    date: new Date().toISOString()
+                };
+                
+                journalEntries.unshift(entry);
+                titleInput.value = '';
+                contentInput.value = '';
+                selectMood('😊');
+                saveJournal();
+                loadJournalEntries();
+                updateStats();
+                alert('📖 Journal entry saved!');
+            }
+        }
+
+        // Load and display journal entries
+        function loadJournalEntries() {
+            const list = document.getElementById('journalEntryList');
+            
+            if (journalEntries.length === 0) {
+                list.innerHTML = '<div class="no-items">📖 No journal entries yet. Start writing above!</div>';
+                return;
+            }
+            
+            list.innerHTML = journalEntries.map(entry => `
+                <div class="journal-entry" onclick="openJournal(${entry.id})">
+                    <div class="journal-header">
+                        <div class="journal-date">${formatDate(entry.date)}</div>
+                        <div class="journal-mood">${entry.mood}</div>
+                    </div>
+                    <div class="journal-title">${entry.title}</div>
+                    <div class="journal-preview">${entry.content}</div>
+                    <div class="journal-actions">
+                        <button class="journal-btn" onclick="event.stopPropagation(); openJournal(${entry.id})">📖 Read</button>
+                        <button class="journal-btn delete" onclick="event.stopPropagation(); deleteJournal(${entry.id})">🗑 Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Search journal entries
+        function searchJournal() {
+            const searchTerm = document.getElementById('journalSearchInput').value.toLowerCase();
+            const filtered = journalEntries.filter(entry => 
+                entry.title.toLowerCase().includes(searchTerm) || 
+                entry.content.toLowerCase().includes(searchTerm)
+            );
+            
+            const list = document.getElementById('journalEntryList');
+            
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="no-items">🔍 No matching entries found.</div>';
+                return;
+            }
+            
+            list.innerHTML = filtered.map(entry => `
+                <div class="journal-entry" onclick="openJournal(${entry.id})">
+                    <div class="journal-header">
+                        <div class="journal-date">${formatDate(entry.date)}</div>
+                        <div class="journal-mood">${entry.mood}</div>
+                    </div>
+                    <div class="journal-title">${entry.title}</div>
+                    <div class="journal-preview">${entry.content}</div>
+                    <div class="journal-actions">
+                        <button class="journal-btn" onclick="event.stopPropagation(); openJournal(${entry.id})">📖 Read</button>
+                        <button class="journal-btn delete" onclick="event.stopPropagation(); deleteJournal(${entry.id})">🗑 Delete</button>
+                    </div>
+                </div>
+            `).join('');
+            // Open journal modal
+        }
+        </script>
+        </body>
+        </html>
+
+        
